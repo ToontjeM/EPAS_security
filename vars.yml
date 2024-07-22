@@ -1,0 +1,6 @@
+epas:
+  vm_name: epas
+  mem_size: 2048
+  cpus: 2
+  box: generic/rocky9
+  network: "192.168.0.21"
