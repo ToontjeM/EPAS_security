@@ -3,4 +3,5 @@ export N=$(tput sgr0)
 export R=$(tput setaf 1)
 export G=$(tput setaf 2)
 
-export EDBTOKEN=$(cat /vagrant/.edbtoken)
+export DBHOST=192.168.0.211
+export PGPASSFILE=./passfile
