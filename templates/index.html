@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
+        h1 { color: #333; }
+        input, button { margin: 10px 0; padding: 5px; }
+        #results { margin-top: 20px; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>SQL Injection Demo</h1>
+    <div>
+        <input type="text" id="lastname" placeholder="Enter last name">
+        <button onclick="searchUnsafe()">Search (Unsafe)</button>
+        <button onclick="searchSafe()">Search (Safe)</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>Results:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        }
+
+        function searchUnsafe() {
+            const lastname = document.getElementById('lastname').value;
+            axios.get(`/unsafe/customers?lastname=${lastname}`)
+                .then(response => displayResults(response.data))
+                .catch(error => console.error('Error:', error));
+        }
+
+        function searchSafe() {
+            const lastname = document.getElementById('lastname').value;
+            axios.get(`/safe/customers?lastname=${lastname}`)
+                .then(response => displayResults(response.data))
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

@@ -49,10 +49,7 @@ Type "help" for help.
 edb=> 
 ```
 
-### Use case 2: Virtual Private Databases
-
-
-### Use case 3: Redacting data
+### Use case 2: Redacting data
 1. `21_show_customers.sh` shows the content of the `customers` table.
 2. `22_create_users.sh` created two users, `hr` and `dba`.
 3. `23_create_retention_policies.sh` will create two posicies:
@@ -62,12 +59,9 @@ edb=>
     First the redaction functions will be created, then the policies will be defined using those functions.
 4. `24_connect_as_hr_and_dba.sh` will show the data when connected as `hr` or as `dba`.
 ```
-edb=> \c edb hr
-psql (16.3 (Homebrew), server 16.3.0)
-WARNING: psql major version 16, server major version 16.
-         Some psql features might not work.
-You are now connected to database "edb" as user "hr".
-edb=> select * from customers limit 1;
+--- Connect as HR (password hr) and select data ---
+
+Password for user hr: 
 -[ RECORD 1 ]--------+------------------------
 customerid           | 1
 firstname            | Justin
@@ -90,14 +84,9 @@ age                  | 49
 income               | 133186
 gender               | M
 
+--- Connect as DBA (password dba) and select data ---
 
-edb=> \c edb dba
 Password for user dba: 
-psql (16.3 (Homebrew), server 16.3.0)
-WARNING: psql major version 16, server major version 16.
-         Some psql features might not work.
-You are now connected to database "edb" as user "dba".
-edb=> select * from customers limit 1;
 -[ RECORD 1 ]--------+------------------------
 customerid           | 1
 firstname            | Justin
@@ -121,27 +110,22 @@ income               | 133186
 gender               | M
 ```
 
+### Use case 3: Virtual Private Databases
 
+### Use case 4: SQL*Wrap
+
+### Use case 5: Transparent Data Encryption (TDE)
+
+### Use case 6: Audit Log
+
+### Use case 7: SQL/Protect
+1. SSH into the epas server using `vagrant ssh epas` and run `python /vagrant/sqlinjection.py` and leave this running in a window.
+2. On your local workstation, open `http:<ip of epas server>:5000` in a browser.
+3. Do a search for "Smith" and press `Search (Unsafe)`. 
+4. Do a search for `Smith' OR '1'='1` and you will get all records. This implies a data breach.
 
 
 ## Demo cleanup
 To clean up the demo environment you just have to run `vagrant destroy`. This will remove the virtual machines and everything in it.
 
 ## TODO / To fix
-### Prep
-Create web application that allows for SQL injection
-
-Enable Audit logging
-
-### Demos
-
-Virtual Private Database
-
-
-SQL Wrap
-
-Transparent Data Encryption
-
-SQL Protect
-
-Audit Log

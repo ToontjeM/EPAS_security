@@ -13,7 +13,10 @@ sudo systemctl stop firewalld.service
 sudo systemctl disable firewalld.service
 
 echo "--- Installing EPAS 16 ---"
-dnf install edb-as16-server -y
+sudo dnf install epel-release python-pip edb-as16-server -y
+sudo yum install python3-pip python3-devel gcc
+sudo dnf install nginx -y
+pip3 install gunicorn flask psycopg2-binary
 
 sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as16/bin/edb-as-16-setup initdb
 sudo mkdir -p /var/lib/edb/as16/data/conf.d
@@ -33,6 +36,20 @@ $(cat /var/lib/edb/as16/data/pg_hba.conf)" > /var/lib/edb/as16/data/pg_hba.conf'
 
 echo "--- Enabling data redaction ---"
 sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/as16/data/postgresql.conf
+
+echo "--- Enabling auditing ---"
+cat <<EOF >//var/lib/edb/as16/data/postgresql.auto.conf
+edb_audit = 'csv'
+edb_audit_directory = 'edb_audit'
+edb_audit_filename = 'audit-%Y-%m-%d_%H%M%S' 
+edb_audit_rotation_day = 'every' 
+#edb_audit_rotation_size = 0
+edb_audit_connect = 'all'           # none, failed, all
+edb_audit_disconnect = 'none'          # none, all
+edb_audit_statement = 'all'
+edb_audit_destination = 'file'         # file or syslog
+EOF
+
 sudo systemctl restart edb-as-16
 sudo systemctl status edb-as-16
 
