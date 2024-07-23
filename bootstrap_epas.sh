@@ -30,11 +30,14 @@ host    all             all             127.0.0.1/32        md5
 host    all             all             192.168.0.0/24      md5
 
 $(cat /var/lib/edb/as16/data/pg_hba.conf)" > /var/lib/edb/as16/data/pg_hba.conf'
+
+echo "--- Enabling data redaction ---"
+sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/as16/data/postgresql.conf
 sudo systemctl restart edb-as-16
 sudo systemctl status edb-as-16
 
 echo "--- Setting password for user enterprisedb ---"
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"
 echo "--- Creating database ---"
-psql -h $DBHOST -p 5444 -U enterprisedb -f create_table.sql edb
-psql -h $DBHOST -p 5444 -U enterprisedb -c "\copy customers FROM 'customer_data.csv' WITH CSV HEADER;" edb
+sudo su - enterprisedb -c "psql -f /vagrant/create_table.sql edb"
+sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant/customer_data.csv' WITH CSV HEADER;\" edb"
