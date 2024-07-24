@@ -7,10 +7,11 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
-        h1 { color: #333; }
+        h1, h2 { color: #333; }
         input, button { margin: 10px 0; padding: 5px; }
         #results { margin-top: 20px; }
         pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; }
+        .count { font-weight: bold; color: #007bff; }
     </style>
 </head>
 <body>
@@ -20,25 +21,29 @@
         <button onclick="searchUnsafe()">Search (Unsafe)</button>
         <button onclick="searchSafe()">Search (Safe)</button>
     </div>
+    <div id="count"></div>
     <div id="results"></div>
 
     <script>
-        function displayResults(data) {
+        function displayResults(data, method) {
+            const countDiv = document.getElementById('count');
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<h3>Results:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            
+            countDiv.innerHTML = `<h2>${method} Search Results: <span class="count">${data.count}</span> records found</h2>`;
+            resultsDiv.innerHTML = '<h3>Data:</h3><pre>' + JSON.stringify(data.data, null, 2) + '</pre>';
         }
 
         function searchUnsafe() {
             const lastname = document.getElementById('lastname').value;
             axios.get(`/unsafe/customers?lastname=${lastname}`)
-                .then(response => displayResults(response.data))
+                .then(response => displayResults(response.data, 'Unsafe'))
                 .catch(error => console.error('Error:', error));
         }
 
         function searchSafe() {
             const lastname = document.getElementById('lastname').value;
             axios.get(`/safe/customers?lastname=${lastname}`)
-                .then(response => displayResults(response.data))
+                .then(response => displayResults(response.data, 'Safe'))
                 .catch(error => console.error('Error:', error));
         }
     </script>

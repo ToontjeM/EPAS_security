@@ -11,8 +11,8 @@ app = Flask(__name__)
 # Updated Database connection parameters
 DB_PARAMS = {
     "dbname": "edb",
-    "user": "enterprisedb",
-    "password": "enterprisedb",
+    "user": "webuser",
+    "password": "webuser",
     "host": "localhost",
     "port": 5444  # Updated port number
 }
@@ -38,7 +38,10 @@ def unsafe_get_customers():
     cur.close()
     conn.close()
     
-    return jsonify(customers)
+    return jsonify({
+        'count': len(customers),
+        'data': customers
+    })
 
 @app.route('/safe/customers', methods=['GET'])
 def safe_get_customers():
@@ -54,7 +57,10 @@ def safe_get_customers():
     cur.close()
     conn.close()
     
-    return jsonify(customers)
+    return jsonify({
+        'count': len(customers),
+        'data': customers
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
