@@ -120,11 +120,10 @@ Log is in /var/lib/edb/as16/data/edb_audit
 ### Use case 6: SQL/Protect
 1. `71_create_user_to_monitor.sh` creates the `webuser` which runs the web application and enabled monitoring of this user.
 2. `72_switch_monitoring_on` shows currently learned relations and switches on monitoring.
-3. SSH into the epas server using `vagrant ssh epas` and run `python /vagrant/sqlinjection.py` and leave this running in a window.
-2. On your local workstation, open `http:<ip of epas server>:5000` in a browser.
-3. Do a search for `Bean` and press `Search (Unsafe)`.
-4. Do a search for `Bean' OR '1'='1` and you will get all records. This implies a data breach.
-5. 
+3. On your local workstation, open `http:<ip of epas server>:5000` in a browser.
+4. Do a search for `Bean` and press `Search (Unsafe)`.
+5. Do a search for `Bean' OR '1'='1` and you will get all records. This implies a data breach.
+6. 
 
 ## Demo cleanup
 To clean up the demo environment you just have to run `vagrant destroy`. This will remove the virtual machines and everything in it.
