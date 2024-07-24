@@ -1,4 +1,4 @@
-# EDB Postgres Advanced Server security enhancements
+# EDB Postgres Advanced Server security enhancements (WIP)
 
 ## Intro
 This demo is deployed using Vagrant and will deploy one EDB Postgres Advanced Server node.
