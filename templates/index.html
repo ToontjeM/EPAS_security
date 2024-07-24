@@ -9,9 +9,12 @@
         body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; }
         h1, h2 { color: #333; }
         input, button { margin: 10px 0; padding: 5px; }
-        #results { margin-top: 20px; }
-        pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; }
+        #results { margin-top: 20px; overflow-x: auto; }
         .count { font-weight: bold; color: #007bff; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
     </style>
 </head>
 <body>
@@ -25,12 +28,40 @@
     <div id="results"></div>
 
     <script>
+        const fieldNames = [
+            'customerid', 'firstname', 'lastname', 'address1', 'address2', 'city', 'state', 'zip', 'country', 'region',
+            'email', 'phone', 'creditcardtype', 'creditcard', 'creditcardexpiration', 'username', 'password', 'age', 'income', 'gender'
+        ];
+
         function displayResults(data, method) {
             const countDiv = document.getElementById('count');
             const resultsDiv = document.getElementById('results');
             
             countDiv.innerHTML = `<h2>${method} Search Results: <span class="count">${data.count}</span> records found</h2>`;
-            resultsDiv.innerHTML = '<h3>Data:</h3><pre>' + JSON.stringify(data.data, null, 2) + '</pre>';
+            
+            if (data.count > 0) {
+                let tableHTML = '<table><tr>';
+                
+                // Create table headers using the predefined field names
+                fieldNames.forEach(header => {
+                    tableHTML += `<th>${header}</th>`;
+                });
+                tableHTML += '</tr>';
+                
+                // Create table rows
+                data.data.forEach(row => {
+                    tableHTML += '<tr>';
+                    row.forEach((value, index) => {
+                        tableHTML += `<td>${value !== null ? value : ''}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                
+                tableHTML += '</table>';
+                resultsDiv.innerHTML = tableHTML;
+            } else {
+                resultsDiv.innerHTML = '<p>No results found.</p>';
+            }
         }
 
         function searchUnsafe() {
