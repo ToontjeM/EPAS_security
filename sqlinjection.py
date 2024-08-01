@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # Updated Database connection parameters
 DB_PARAMS = {
-    "dbname": "edb",
+    "dbname": "webapp",
     "user": "webuser",
     "password": "webuser",
     "host": "localhost",

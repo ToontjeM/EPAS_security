@@ -30,11 +30,6 @@ host    all             all             192.168.0.0/24      md5
 $(cat /var/lib/edb/as16/data/pg_hba.conf)" > /var/lib/edb/as16/data/pg_hba.conf'
 sudo systemctl restart edb-as-16
 
-echo "--- Creating demo database ---"
-sudo su - enterprisedb -c "psql -f /vagrant/create_table.sql edb"
-sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant/customer_data.csv' WITH CSV HEADER;\" edb"
-sudo su - enterprisedb -c "psql -c \"DELETE FROM customers WHERE length(creditcard) != 16;\" edb"
-
 echo "--- Enabling data redaction ---"
 sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/as16/data/postgresql.conf
 
@@ -68,10 +63,13 @@ EOF
 sudo systemctl restart edb-as-16
 
 echo "--- Configure SQL/Protect (cont) ---"
-sudo su - enterprisedb -c "psql -f /usr/edb/as16/share/contrib/sqlprotect.sql edb"
 echo "--- Create webuser for running web application ---"
 sudo su - enterprisedb -c "psql -c \"CREATE USER webuser WITH PASSWORD 'webuser';\" edb"
-sudo su - enterprisedb -c "psql -c \"GRANT ALL ON customers TO webuser;\" edb"
+sudo su - enterprisedb -c "psql -c \"CREATE DATABASE webapp OWNER webuser;\" edb"
+sudo su - enterprisedb -c "psql -c \"CREATE SCHEMA webapp;\" webapp"
+sudo su - enterprisedb -c "psql -c \"ALTER SCHEMA webapp OWNER TO webuser;\" webapp"
+sudo su - enterprisedb -c "psql -c \"SET search_path = webapp, pg_catalog;\" webapp"
+sudo su - enterprisedb -c "psql -f /usr/edb/as16/share/contrib/sqlprotect.sql webapp"
 
 echo "--- Configuring Flask application ---"
 sudo yum install python3-pip python3-devel gcc
@@ -92,6 +90,13 @@ sudo supervisorctl status
 
 sudo systemctl restart edb-as-16
 sudo systemctl status edb-as-16
+
+echo "--- Creating demo database ---"
+sudo su - enterprisedb -c "psql -f /vagrant/create_table.sql edb"
+sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant/customer_data.csv' WITH CSV HEADER;\" edb"
+sudo su - enterprisedb -c "psql -c \"DELETE FROM customers WHERE length(creditcard) != 16;\" edb"
+sudo su - enterprisedb -c "psql -U webuser -f /vagrant/create_table.sql webapp"
+sudo su - enterprisedb -c "psql -U webuser -c \"\copy customers FROM '/vagrant/customer_data.csv' WITH CSV HEADER;\" webapp"
 
 echo "--- Setting password for user enterprisedb ---"
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"
