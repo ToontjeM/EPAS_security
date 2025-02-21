@@ -4,7 +4,7 @@ echo "--- Running Bootstrap_general.sh ---"
 export EDBTOKEN=$(cat /vagrant/.edbtoken)
 
 echo "--- Configuring repo ---"
-curl -1sLf 'https://downloads.enterprisedb.com/pdZe6pcnWIgmuqdR7v1L38rG6Z6wJEsY/enterprise/setup.rpm.sh' | sudo -E bash
+curl -1sLf 'https://downloads.enterprisedb.com/{$EDBTOKEN}/enterprise/setup.rpm.sh' | sudo -E bash
 
 echo "--- Running updates ---"
 dnf update && dnf upgrade -y
