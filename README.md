@@ -23,31 +23,31 @@ After provisioning, the hosts will have the current directory mounted in their f
 ### Userid and Passwords
 - enterprisedb / enterprisedb (Owner of the instance)
 
-## Demo flow
+## Use cases
 ### Password Profile Management
 1. `11_show_profiles.sh` shows which profiles are available on the server.
 2. `12_create_new_admin_profile.sh` creates a new, more restricted, password profile for a second admin user `admin2`
 3. `13_change_password.sh` shows a failed password re-use attempt because of the more restrictive password policy in place.
-```
-ERROR:  password cannot be reused
-DETAIL:  The password_reuse_time constraint failed.
-```
+    ```
+    ERROR:  password cannot be reused
+    DETAIL:  The password_reuse_time constraint failed.
+    ```
 4. `14_brute_force_admin2.sh` attempts to connect to the database using incorrect credentials. At the 4th attempt, the `admin2` account will be locked.
-```
-psql: error: connection to server at "192.168.0.211", port 5444 failed: FATAL:  role "admin2" is locked
-```
+    ```
+    psql: error: connection to server at "192.168.0.211", port 5444 failed: FATAL:  role "admin2" is locked
+    ```
 5. `15_unlock_account.sh` unlocks the account.
-```
-psql -h 192.168.0.211 -p 5444 -U admin2 edb
-
-Password for user admin2: 
-psql (16.3 (Homebrew), server 16.3.0)
-WARNING: psql major version 16, server major version 16.
-         Some psql features might not work.
-Type "help" for help.
-
-edb=> 
-```
+    ```
+    psql -h 192.168.0.211 -p 5444 -U admin2 edb
+    
+    Password for user admin2: 
+    psql (16.3 (Homebrew), server 16.3.0)
+    WARNING: psql major version 16, server major version 16.
+             Some psql features might not work.
+    Type "help" for help.
+    
+    edb=> 
+    ```
 
 ### Data redaction
 1. `21_show_customers.sh` shows the content of the `customers` table.
@@ -58,57 +58,57 @@ edb=>
     
     First the redaction functions will be created, then the policies will be defined using those functions.
 4. `24_connect_as_hr_and_dba.sh` will show the data when connected as `hr` or as `dba`.
-```
---- Connect as HR (password hr) and select data ---
-
-Password for user hr: 
--[ RECORD 1 ]--------+------------------------
-customerid           | 1
-firstname            | Justin
-lastname             | Elliott
-address1             | 373 Wendy Island
-address2             | Suite 539
-city                 | Gravesville
-state                | 
-zip                  | 74741
-country              | Pitcairn Islands
-region               | 3
-email                | claytonking@example.net
-phone                | 
-creditcardtype       | 3
-creditcard           | 4549209759447656
-creditcardexpiration | 08/29
-username             | shelly12
-password             | 0
-age                  | 49
-income               | 133186
-gender               | M
-
---- Connect as DBA (password dba) and select data ---
-
-Password for user dba: 
--[ RECORD 1 ]--------+------------------------
-customerid           | 1
-firstname            | Justin
-lastname             | Elliott
-address1             | 373 Wendy Island
-address2             | Suite 539
-city                 | Gravesville
-state                | 
-zip                  | 74741
-country              | Pitcairn Islands
-region               | 3
-email                | claytonking@example.net
-phone                | 
-creditcardtype       | 3
-creditcard           | xxxxxxxxxxx47656
-creditcardexpiration | 08/29
-username             | shelly12
-password             | 3@l2LuHBG(
-age                  | 49
-income               | 133186
-gender               | M
-```
+    ```
+    --- Connect as HR (password hr) and select data ---
+    
+    Password for user hr: 
+    -[ RECORD 1 ]--------+------------------------
+    customerid           | 1
+    firstname            | Justin
+    lastname             | Elliott
+    address1             | 373 Wendy Island
+    address2             | Suite 539
+    city                 | Gravesville
+    state                | 
+    zip                  | 74741
+    country              | Pitcairn Islands
+    region               | 3
+    email                | claytonking@example.net
+    phone                | 
+    creditcardtype       | 3
+    creditcard           | 4549209759447656
+    creditcardexpiration | 08/29
+    username             | shelly12
+    password             | 0
+    age                  | 49
+    income               | 133186
+    gender               | M
+    
+    --- Connect as DBA (password dba) and select data ---
+    
+    Password for user dba: 
+    -[ RECORD 1 ]--------+------------------------
+    customerid           | 1
+    firstname            | Justin
+    lastname             | Elliott
+    address1             | 373 Wendy Island
+    address2             | Suite 539
+    city                 | Gravesville
+    state                | 
+    zip                  | 74741
+    country              | Pitcairn Islands
+    region               | 3
+    email                | claytonking@example.net
+    phone                | 
+    creditcardtype       | 3
+    creditcard           | xxxxxxxxxxx47656
+    creditcardexpiration | 08/29
+    username             | shelly12
+    password             | 3@l2LuHBG(
+    age                  | 49
+    income               | 133186
+    gender               | M
+    ```
 
 ### SQL*Wrap
 - Show `list_customers.sql`
