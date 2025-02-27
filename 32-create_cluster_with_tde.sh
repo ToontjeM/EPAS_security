@@ -1,3 +1,5 @@
+./config/config.sh
+
 export PGCLUSTERNAME=TDE
 export PGDATA=/var/lib/edb/as17/datawithtde
 export PGLOG=${PGDATA}/log

@@ -11,17 +11,24 @@ To deploy this demo the following needs to be installed in the PC from which you
 - Vagrant (https://www.vagrantup.com/)
 - Vagrant Hosts plug-in (`vagrant plugin install vagrant-hosts`)
 - Vagrant Reload plug-in (`vagrant plugin install vagrant-reload`)
-- A file called `.edbtoken` with your EDB repository 2.0 token. This token can be found in your EDB account profile here: https://www.enterprisedb.com/accounts/profile
+- A file called `.edb_subscription_token` with your EDB repository 2.0 token in your `$HOME/token` directory. This token can be found in your EDB account profile here: https://www.enterprisedb.com/accounts/profile
 
-The environment is deloyed in a VirtualBox private network. Adjust the IP addresses to your needs in `vars.yml`.
 
 ### Provisioning VM's.
-Provision the host using `vagrant up`. This will create the bare virtual machine and will take appx. 5 minutes to complete. 
+Provision the host using `00-provision.sh`. This will create the bare virtual machine and will take appx. 5 minutes to complete. 
 
-After provisioning, the hosts will have the current directory mounted in their filesystem under `/vagrant`
+After provisioning, the hosts will have the following directories mounted in their filesystem:
+
+| Host directory | Directory inside VM | Purpose |
+| --- | --- | --- |
+| `.` (demo dir) | `/vagrant` | Access to the scripts needed to run the demo | 
+| `./scripts` | `/vagrant_scripts` | Scripts used for provisioning and setup of the demo |
+| `./config` | `/vagrant_config` | Configuration settings for the server and applications |
+| `$HOME/tokens` | `/tokens` | Directory hosting your subscription token |
 
 ### Userid and Passwords
 - enterprisedb / enterprisedb (Owner of the instance)
+- webuser / webuser (Owner of the SQL/Protect demo database)
 
 ## Use cases
 ### Password Profile Management
@@ -209,9 +216,8 @@ Log is in /var/lib/edb/as17/data/edb_audit
 3. On your local workstation, open `http:<ip of epas server>:5000` in a browser.
 4. Do a search for `Bean` and press `Search (Unsafe)`.
 5. Do a search for `Bean' OR '1'='1` and you will get all records. This implies a data breach.
-6. 
 
 ## Demo cleanup
-To clean up the demo environment you just have to run `vagrant destroy`. This will remove the virtual machines and everything in it.
+To clean up the demo environment you just have to run `./99-deprovision.sh`. This will remove the virtual machines and everything in it.
 
 ## TODO / To fix

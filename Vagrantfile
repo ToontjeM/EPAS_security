@@ -18,7 +18,7 @@ else
   puts "Error:"
   puts "~/.edb_subscription_token file doesn't exists."
   puts "Please, create file :"
-  puts "echo '<your_token>' > ~/.edb_subscription_file"
+  puts "echo '<your_token>' > ~/.edb_subscription_token"
   puts "***********************************************"
   puts ""
   exit(1) # Stop the program with an error code
@@ -77,7 +77,8 @@ Vagrant.configure("2") do |config|
   # Network
   config.vm.network "private_network", ip: vm_public_ip, netmask: "255.255.255.0"
   config.vm.network "forwarded_port", guest: 22, host: vm_ssh_port
-
+  config.vm.network "forwarded_port", guest: 5000, host: 5000
+  
   # Share files
   config.vm.synced_folder ".", "/vagrant", type: "rsync"
   config.vm.synced_folder "./scripts", "/vagrant_scripts", type: "rsync"

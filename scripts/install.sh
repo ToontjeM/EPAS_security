@@ -1,40 +1,42 @@
 #!/bin/bash
 
-echo "--- Running Bootstrap_general.sh ---"
-export EDBTOKEN=$(cat /vagrant/.edbtoken)
+echo "--- Running install.sh ---"
 
-echo "--- Configuring repo ---"
-curl -1sLf 'https://downloads.enterprisedb.com/{$EDBTOKEN}/enterprise/setup.rpm.sh' | sudo -E bash
+. /vagrant_config/config.sh
+
+echo "--- Configuring repo with repo token ${EDB_SUBSCRIPTION_TOKEN} ---"
+curl -1sLf "https://downloads.enterprisedb.com/${EDB_SUBSCRIPTION_TOKEN}/enterprise/setup.rpm.sh" | sudo -E bash
 
 echo "--- Running updates ---"
 dnf update && dnf upgrade -y
 sudo systemctl stop firewalld.service
 sudo systemctl disable firewalld.service
 
-echo "--- Installing EPAS 16 ---"
-sudo dnf install epel-release python-pip edb-as16-server edb-as16-server-sqlprotect -y
+echo "--- Installing ${DATABASE} ${DATABASEVERSION} ---"
 
-sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as16/bin/edb-as-16-setup initdb
-sudo mkdir -p /var/lib/edb/as16/data/conf.d
-sudo chmod 700 /var/lib/edb/as16/data/conf.d
-sudo chown -R enterprisedb:enterprisedb /var/lib/edb/as16/data/conf.d
-sudo systemctl enable edb-as-16
-sudo systemctl start edb-as-16
+if [ "$DATABASE" == "epas" ]; then
+    DATABASEPREFIX="as"
+    DATABASEPREFIXEDB="edb-as"
+fi
+
+sudo dnf install -y epel-release python3-pip ${DATABASEPREFIXEDB}${DATABASEVERSION}-server ${DATABASEPREFIXEDB}${DATABASEVERSION}-server-sqlprotect
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as${DATABASEVERSION}/bin/${DATABASEPREFIXEDB}-${DATABASEVERSION}-setup initdb
+sudo mkdir -p /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/conf.d
+sudo chmod 700 /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/conf.d
+sudo chown -R enterprisedb:enterprisedb /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/conf.d
+sudo systemctl enable ${DATABASEPREFIXEDB}-${DATABASEVERSION}
+sudo systemctl start ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Configuring pg_hba.conf ---"
-sudo su - enterprisedb -c 'echo "
-local   all             all                                 trust
-host    all             all             127.0.0.1/32        md5
-host    all             all             192.168.0.0/24      md5
+sudo sed -i 's/127.0.0.1\/32,0.0.0.0\/0/g' /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/pg_hba.conf
 
-$(cat /var/lib/edb/as16/data/pg_hba.conf)" > /var/lib/edb/as16/data/pg_hba.conf'
-sudo systemctl restart edb-as-16
+sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Enabling data redaction ---"
-sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/as16/data/postgresql.conf
+sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.conf
 
 echo "--- Enabling auditing ---"
-cat <<EOF >>/var/lib/edb/as16/data/postgresql.auto.conf
+cat <<EOF >>/var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.auto.conf
 
 # --- EDB Audit ---
 edb_audit = 'csv'
@@ -49,8 +51,8 @@ edb_audit_destination = 'file'         # file or syslog
 EOF
 
 echo "--- Configure SQL/Protect ---"
-sudo sed -i 's/libdir\/dbms_aq/libdir\/dbms_aq,\$libdir\/sqlprotect/g' /var/lib/edb/as16/data/postgresql.conf
-cat <<EOF >>/var/lib/edb/as16/data/postgresql.auto.conf
+sudo sed -i 's/libdir\/dbms_aq/libdir\/dbms_aq,\$libdir\/sqlprotect/g' /var/lib/edb/as${DATABASEVERSION}/data/postgresql.conf
+cat <<EOF >>/var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.auto.conf
 
 # --- SQL/Protect ---
 edb_sql_protect.enabled = on
@@ -60,7 +62,7 @@ edb_sql_protect.max_protected_relations = 1024
 edb_sql_protect.max_queries_to_save = 5000
 EOF
 
-sudo systemctl restart edb-as-16
+sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Configure SQL/Protect (cont) ---"
 echo "--- Create webuser for running web application ---"
@@ -69,7 +71,7 @@ sudo su - enterprisedb -c "psql -c \"CREATE DATABASE webapp OWNER webuser;\" edb
 sudo su - enterprisedb -c "psql -c \"CREATE SCHEMA webapp;\" webapp"
 sudo su - enterprisedb -c "psql -c \"ALTER SCHEMA webapp OWNER TO webuser;\" webapp"
 sudo su - enterprisedb -c "psql -c \"SET search_path = webapp, pg_catalog;\" webapp"
-sudo su - enterprisedb -c "psql -f /usr/edb/as16/share/contrib/sqlprotect.sql webapp"
+sudo su - enterprisedb -c "psql -f /usr/edb/${DATABASEPREFIX}${DATABASEVERSION}/share/contrib/sqlprotect.sql webapp"
 
 echo "--- Configuring Flask application ---"
 sudo yum install python3-pip python3-devel gcc
@@ -88,15 +90,13 @@ sudo systemctl start supervisord
 sudo supervisorctl update
 sudo supervisorctl status
 
-sudo systemctl restart edb-as-16
-sudo systemctl status edb-as-16
+sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
+sudo systemctl status ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Creating demo database ---"
-sudo su - enterprisedb -c "psql -f /vagrant/create_table.sql edb"
-sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant/customer_data.csv' WITH CSV HEADER;\" edb"
+sudo su - enterprisedb -c "psql -f /vagrant_scripts/create_table.sql edb"
+sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant_scripts/customer_data.csv' WITH CSV HEADER;\" edb"
 sudo su - enterprisedb -c "psql -c \"DELETE FROM customers WHERE length(creditcard) != 16;\" edb"
-sudo su - enterprisedb -c "psql -U webuser -f /vagrant/create_table.sql webapp"
-sudo su - enterprisedb -c "psql -U webuser -c \"\copy customers FROM '/vagrant/customer_data.csv' WITH CSV HEADER;\" webapp"
 
 echo "--- Setting password for user enterprisedb ---"
 sudo su - enterprisedb -c "psql -c \"ALTER ROLE enterprisedb IDENTIFIED BY enterprisedb superuser;\" edb"

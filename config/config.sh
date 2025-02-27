@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Token
+export EDB_SUBSCRIPTION_TOKEN=(`cat /tokens/.edb_subscription_token`)
 
 # Software
 export DATABASE="epas"
