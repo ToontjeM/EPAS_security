@@ -172,7 +172,7 @@ After provisioning, the hosts will have the following directories mounted in the
 -rw-------. 1 enterprisedb enterprisedb 13862 Feb 28 09:12 /var/lib/edb/as17/data/edb_audit/audit-2025-02-28_091222.csv
 -rw-------. 1 enterprisedb enterprisedb  4479 Feb 28 09:12 /var/lib/edb/as17/data/edb_audit/audit-2025-02-28_091246.csv
 ```
-2. Show one of teh logs using `less <log>`.
+2. Show one of the logs using `less <log>`.
 
 ### 6. SQL/Protect
 1. `71_create_user_to_monitor.sh` creates the `webuser` which runs the web application and enabled monitoring of this user.
