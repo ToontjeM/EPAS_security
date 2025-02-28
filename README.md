@@ -148,54 +148,22 @@ After provisioning, the hosts will have the following directories mounted in the
 - Create a TDE-enabled cluster using script `32_create_cluster_with_tde.sh`. This database will run on port 6445.
 - Open four terminal panes.
 
-**Top Left, Top Right**
-- Become the enterprisedb user using: sudo su - enterprisedb and move to the `EPAS_security` directory.
-
-**Bottom Left**
-- Show the `31_reate_cluster_no_tde.sh` script.
-
-**Bottom Right**
-- Show the `32_create_cluster_with_tde.sh` script.
-
-**Bootom Left**
-- Create a normal database using `./31_create_cluster_no_tde.sh`.
-
-**Bottom right**
-- Create a normal database using `./32_create_cluster_with_tde.sh`.
-
-**Top Left**
-- Connect to the database using `psql -p 6444 edb`
-
-**Top right**
-- Connect to the database using `psql -p 6445 edb`
-
-**Bottom Left**
-- Show postgresql.conf using `less $PGDATA/../datanotde/postgresql.conf` and search for `Data\ Encryp`
-
-**Bottom right**
-- Show postgresql.conf using `less $PGDATA/../datawithtde/postgresql.conf` and search for `Data\ Encryp`
-
-**In both top panes**
-- Run `select data_encryption_version from pg_control_init();`
-
-**Bottom right**
-- Show the encryption key using `cat $PGDATA/../datawithtde/pg_encryption/key.bin`
-
-**In both top panes**
-- run `\\i /vagrant/create_users_table.sql`
-
-**In both top panes**
-- run `select pg_relation_filepath('users');` and copy the result on the clipboard.
-
-**In both bottom panes**
-- Run `hexdump -C <paste the result>`
-
-**Bottom Left**
-- Run `pg_dump -p 6444 -U enterprisedb edb`
-
-**Bottom Right**
-- Run `pg_dump -p 6445 -U enterprisedb edb`
-
+| Top Left | Top Right | Bottom Left | Bottom Right |
+| --- | --- | --- | --- | 
+| `./scripts/ssh.sh` |  `./scripts/ssh.sh` |  `./scripts/ssh.sh` |  `./scripts/ssh.sh` | 
+| `sudo su - enterprisedb` | `sudo su - enterprisedb` | `sudo su - enterprisedb` |`sudo su - enterprisedb` |
+| `cd /vagrant` |  `cd /vagrant` | `cd /vagrant` | `cd /vagrant` |
+| | | `cat 31_create_cluster_no_tde.sh` | `cat 32_create_cluster_with_tde.sh` |
+| | | `31_create_cluster_no_tde.sh` | `32_create_cluster_with_tde.sh` |
+| `psql -p 6444 edb` | `psql -p 6445 edb` | | |
+| | | `less $PGDATA/../datanotde/postgresql.conf` |`less $PGDATA/../datanotde/postgresql.conf` |
+| | | `/Data\ Encrypt`| `/Data\ Encrypt` |
+| `select data_encryption_version from pg_control_init(); | `select data_encryption_version from pg_control_init(); | | |
+| | | | `cat $PGDATA/../datawithtde/pg_encryption/key.bin` |
+| `\i 33-create_user.sql` | `\i 33-create_user.sql` | | |
+| `select pg_relation_filepath('users');` | `select pg_relation_filepath('users');` |
+| | | `hexdump -C $PGDATA/../datanotde/<paste the result>` | `hexdump -C $PGDATA/../datawithtde/<paste the result>` |
+| | | `pg_dump -p 6444 -U enterprisedb edb` | `pg_dump -p 6445 -U enterprisedb edb` |
 
 ### Enhanced Auditing
 Log is in /var/lib/edb/as17/data/edb_audit

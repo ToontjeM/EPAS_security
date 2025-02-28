@@ -6,6 +6,7 @@ export PGLOG=${PGDATA}/log
 export PGWAL=${PGDATA}/pg_wal
 export PGPORT=6445
 
+# No key management exaple
 export PGDATAKEYWRAPCMD='-'
 export PGDATAKEYUNWRAPCMD='-'
 
