@@ -31,7 +31,7 @@ After provisioning, the hosts will have the following directories mounted in the
 - webuser / webuser (Owner of the SQL/Protect demo database)
 
 ## Use cases
-### Password Profile Management
+### 1. Password Profile Management
 1. `11_show_profiles.sh` shows which profiles are available on the server.
 2. `12_create_new_admin_profile.sh` creates a new, more restricted, password profile for a second admin user `admin2`
 3. `13_change_password.sh` shows a failed password re-use attempt because of the more restrictive password policy in place.
@@ -56,7 +56,7 @@ After provisioning, the hosts will have the following directories mounted in the
     edb=> 
     ```
 
-### Data redaction
+### 2. Data redaction
 1. `21_show_customers.sh` shows the content of the `customers` table.
 2. `22_create_users.sh` created two users, `hr` and `dba`.
 3. `23_create_retention_policies.sh` will create two posicies:
@@ -117,10 +117,10 @@ After provisioning, the hosts will have the following directories mounted in the
     gender               | M
     ```
 
-### SQL*Wrap
+### 3. SQL*Wrap
 - Show `list_customers.sql`
 - In another pane, connect to the database using `psql edb`
-- Import the stored procedure using `\\i list_customers.sql`.
+- Import the stored procedure using `\i list_customers.sql`.
 - Display the stored procedure using `SELECT prosrc FROM pg_proc WHERE proname = 'list_customers';`
 - Encrypt the stored procedure using `sqlwrap -i list_customers.sql`. A `list_customers.plb` is created.
 - Show the list_customers.plb file using `less list_customers.plb`
@@ -142,9 +142,9 @@ After provisioning, the hosts will have the following directories mounted in the
 - Show the warpped function again using `SELECT prosrc FROM pg_proc WHERE proname = 'list_customers';`
 - Run `exec list_customers;` to show that the stored procedure is working correctly.
 
-### Transparent Data Encryption (TDE)
+### 4. Transparent Data Encryption (TDE)
 - Become user `enterprisedb` using `sudo su - enterprisedb` and `cd` into `EPAS_security`.
-- Create a standard cluster using script `31_create_cluster_no_tde.sh` This database will run on port 6444.
+- Create a standard cluster using script `41_create_cluster_no_tde.sh` This database will run on port 6444.
 - Create a TDE-enabled cluster using script `32_create_cluster_with_tde.sh`. This database will run on port 6445.
 - Open four terminal panes.
 
@@ -153,32 +153,28 @@ After provisioning, the hosts will have the following directories mounted in the
 | `./scripts/ssh.sh` |  `./scripts/ssh.sh` |  `./scripts/ssh.sh` |  `./scripts/ssh.sh` | 
 | `sudo su - enterprisedb` | `sudo su - enterprisedb` | `sudo su - enterprisedb` |`sudo su - enterprisedb` |
 | `cd /vagrant` |  `cd /vagrant` | `cd /vagrant` | `cd /vagrant` |
-| | | `cat 31_create_cluster_no_tde.sh` | `cat 32_create_cluster_with_tde.sh` |
-| | | `31_create_cluster_no_tde.sh` | `32_create_cluster_with_tde.sh` |
+| | | `cat 41_create_cluster_no_tde.sh` | `cat 42_create_cluster_with_tde.sh` |
+| | | `41_create_cluster_no_tde.sh` | `42_create_cluster_with_tde.sh` |
 | `psql -p 6444 edb` | `psql -p 6445 edb` | | |
 | | | `less $PGDATA/../datanotde/postgresql.conf` |`less $PGDATA/../datanotde/postgresql.conf` |
 | | | `/Data\ Encrypt`| `/Data\ Encrypt` |
 | `select data_encryption_version from pg_control_init(); | `select data_encryption_version from pg_control_init(); | | |
 | | | | `cat $PGDATA/../datawithtde/pg_encryption/key.bin` |
-| `\i 33-create_user.sql` | `\i 33-create_user.sql` | | |
+| `\i 43-create_user.sql` | `\i 43-create_user.sql` | | |
 | `select pg_relation_filepath('users');` | `select pg_relation_filepath('users');` |
 | | | `hexdump -C $PGDATA/../datanotde/<paste the result>` | `hexdump -C $PGDATA/../datawithtde/<paste the result>` |
 | | | `pg_dump -p 6444 -U enterprisedb edb` | `pg_dump -p 6445 -U enterprisedb edb` |
 
-### Enhanced Auditing
-Log is in /var/lib/edb/as17/data/edb_audit
+### 5. Enhanced Auditing
+1. Show the logs in /var/lib/edb/as17/data/edb_audit using `51-show_log.sh`.
 ```
-2025-02-25 14:53:49.006 CET,"enterprisedb","edb",34910,"192.168.0.130:53014",67bdcb6c.885e,2,"idle",2025-02-25 14:53:48 CET,5/3,0,AUDIT,00000,"statement: select * from customers limit 1;",,,,,,,,,"psql","client backend",,0,"SELECT","","select"
-2025-02-25 14:53:49.077 CET,"enterprisedb","edb",34911,"192.168.0.130:53015",67bdcb6d.885f,1,"authentication",2025-02-25 14:53:49 CET,6/1,0,AUDIT,00000,"connection authorized: user=enterprisedb database=edb",,,,,,,,,"","client backend",,0,"","","connect"
-2025-02-25 14:53:49.084 CET,"enterprisedb","edb",34911,"192.168.0.130:53015",67bdcb6d.885f,2,"idle",2025-02-25 14:53:49 CET,6/3,0,AUDIT,00000,"statement: select count(*) from customers;",,,,,,,,,"psql","client backend",,0,"SELECT","","select"
-2025-02-25 14:54:08.041 CET,"enterprisedb","edb",34915,"192.168.0.130:53044",67bdcb80.8863,1,"authentication",2025-02-25 14:54:08 CET,7/1,0,AUDIT,00000,"connection authorized: user=enterprisedb database=edb",,,,,,,,,"","client backend",,0,"","","connect"
-2025-02-25 14:54:08.047 CET,"enterprisedb","edb",34915,"192.168.0.130:53044",67bdcb80.8863,2,"idle",2025-02-25 14:54:08 CET,7/3,0,AUDIT,00000,"statement: CREATE USER hr WITH PASSWORD 'hr';",,,,,,,,,"psql","client backend",,0,"CREATE ROLE","","create"
-2025-02-25 14:54:08.137 CET,"enterprisedb","edb",34916,"192.168.0.130:53045",67bdcb80.8864,1,"authentication",2025-02-25 14:54:08 CET,8/1,0,AUDIT,00000,"connection authorized: user=enterprisedb database=edb",,,,,,,,,"","client backend",,0,"","","connect"
-2025-02-25 14:54:08.143 CET,"enterprisedb","edb",34916,"192.168.0.130:53045",67bdcb80.8864,2,"idle",2025-02-25 14:54:08 CET,8/3,0,AUDIT,00000,"statement: CREATE USER dba WITH PASSWORD 'dba';",,,,,,,,,"psql","client backend",,0,"CREATE ROLE","","create"
-2025-02-25 14:54:08.231 CET,"enterprisedb","edb",34917,"192.168.0.130:53046",67bdcb80.8865,1,"authentication",2025-02-25 14:54:08 CET,9/1,0,AUDIT,00000,"connection authorized: user=enterprisedb database=edb",,,,,,,,,"","client backend",,0,"","","connect"```
+[enterprisedb@localhost vagrant]$ ls -ld /var/lib/edb/as17/data/edb_audit/*
+-rw-------. 1 enterprisedb enterprisedb 13862 Feb 28 09:12 /var/lib/edb/as17/data/edb_audit/audit-2025-02-28_091222.csv
+-rw-------. 1 enterprisedb enterprisedb  4479 Feb 28 09:12 /var/lib/edb/as17/data/edb_audit/audit-2025-02-28_091246.csv
 ```
+2. Show one of teh logs using `less <log>`.
 
-### SQL/Protect
+### 6. SQL/Protect
 1. `71_create_user_to_monitor.sh` creates the `webuser` which runs the web application and enabled monitoring of this user.
 2. `72_switch_monitoring_on` shows currently learned relations and switches on monitoring.
 3. On your local workstation, open `http:<ip of epas server>:5000` in a browser.
