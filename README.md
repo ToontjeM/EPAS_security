@@ -158,7 +158,7 @@ After provisioning, the hosts will have the following directories mounted in the
 | `psql -p 6444 edb` | `psql -p 6445 edb` | | |
 | | | `less $PGDATA/../datanotde/postgresql.conf` |`less $PGDATA/../datanotde/postgresql.conf` |
 | | | `/Data\ Encrypt`| `/Data\ Encrypt` |
-| `select data_encryption_version from pg_control_init(); | `select data_encryption_version from pg_control_init(); | | |
+| `select data_encryption_version from pg_control_init();` | `select data_encryption_version from pg_control_init();` | | |
 | | | | `cat $PGDATA/../datawithtde/pg_encryption/key.bin` |
 | `\i 43-create_user.sql` | `\i 43-create_user.sql` | | |
 | `select pg_relation_filepath('users');` | `select pg_relation_filepath('users');` |
