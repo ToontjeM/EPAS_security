@@ -177,7 +177,7 @@ After provisioning, the hosts will have the following directories mounted in the
 ### 6. SQL/Protect
 1. `71_create_user_to_monitor.sh` creates the `webuser` which runs the web application and enabled monitoring of this user.
 2. `72_switch_monitoring_on` shows currently learned relations and switches on monitoring.
-3. On your local workstation, open `http:<ip of epas server>:5000` in a browser.
+3. On your local workstation, open `http://localhost:5000` in a browser.
 4. Do a search for `Bean` and press `Search (Unsafe)`.
 5. Do a search for `Bean' OR '1'='1` and you will get all records. This implies a data breach.
 
