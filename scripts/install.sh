@@ -66,11 +66,14 @@ sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Configure SQL/Protect (cont) ---"
 echo "--- Create webuser for running web application ---"
+
 sudo su - enterprisedb -c "psql -c \"CREATE USER webuser WITH PASSWORD 'webuser';\" edb"
 sudo su - enterprisedb -c "psql -c \"CREATE DATABASE webapp OWNER webuser;\" edb"
-sudo su - enterprisedb -c "psql -c \"CREATE SCHEMA webapp;\" webapp"
-sudo su - enterprisedb -c "psql -c \"ALTER SCHEMA webapp OWNER TO webuser;\" webapp"
+sudo su - enterprisedb -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE webapp TO webuser;\" edb"
+sudo su - enterprisedb -c "psql -c \"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO webuser;\" webapp"
 sudo su - enterprisedb -c "psql -c \"SET search_path = webapp, pg_catalog;\" webapp"
+sudo su - enterprisedb -c "psql -f /vagrant_scripts/create_table.sql webapp"
+sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant_scripts/customer_data.csv' WITH CSV HEADER;\" webapp"
 sudo su - enterprisedb -c "psql -f /usr/edb/${DATABASEPREFIX}${DATABASEVERSION}/share/contrib/sqlprotect.sql webapp"
 
 echo "--- Configuring Flask application ---"
@@ -93,7 +96,7 @@ sudo supervisorctl status
 sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 sudo systemctl status ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
-echo "--- Creating demo database ---"
+echo "--- Creating demo database for Data Redaction ---"
 sudo su - enterprisedb -c "psql -f /vagrant_scripts/create_table.sql edb"
 sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant_scripts/customer_data.csv' WITH CSV HEADER;\" edb"
 sudo su - enterprisedb -c "psql -c \"DELETE FROM customers WHERE length(creditcard) != 16;\" edb"
