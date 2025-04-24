@@ -31,6 +31,8 @@ After provisioning, the hosts will have the following directories mounted in the
 - webuser / webuser (Owner of the SQL/Protect demo database)
 
 ## Use cases
+Connect to the epas server console using `vagrant ssh`, change to the enterprisedb user using `sudo su - enterprisedb` and then move into the `/vagrant` directory on that server.
+
 ### 1. Password Profile Management
 1. `11_show_profiles.sh` shows which profiles are available on the server.
 2. `12_create_new_admin_profile.sh` creates a new, more restricted, password profile for a second admin user `admin2`
@@ -59,7 +61,7 @@ After provisioning, the hosts will have the following directories mounted in the
 ### 2. Data redaction
 1. `21_show_customers.sh` shows the content of the `customers` table.
 2. `22_create_users.sh` created two users, `hr` and `dba`.
-3. `23_create_retention_policies.sh` will create two posicies:
+3. `23_create_redaction_policies.sh` will create two posicies:
     1. User `hr` will be able to see the full credit card number, but will not be able to see the users password.
     2. User `dba` will be able to see the passwords, but will not be able to see the credit card details.
     
@@ -143,7 +145,6 @@ After provisioning, the hosts will have the following directories mounted in the
 - Run `exec list_customers;` to show that the stored procedure is working correctly.
 
 ### 4. Transparent Data Encryption (TDE)
-- Become user `enterprisedb` using `sudo su - enterprisedb` and `cd` into `EPAS_security`.
 - Create a standard cluster using script `41_create_cluster_no_tde.sh` This database will run on port 6444.
 - Create a TDE-enabled cluster using script `32_create_cluster_with_tde.sh`. This database will run on port 6445.
 - Open four terminal panes.
@@ -160,7 +161,7 @@ After provisioning, the hosts will have the following directories mounted in the
 | | | `/Data\ Encrypt`| `/Data\ Encrypt` |
 | `select data_encryption_version from pg_control_init();` | `select data_encryption_version from pg_control_init();` | | |
 | | | | `cat $PGDATA/../datawithtde/pg_encryption/key.bin` |
-| `\i 43-create_user.sql` | `\i 43-create_user.sql` | | |
+| `\i 43-create_user_table.sql` | `\i 43-create_user_table.sql` | | |
 | `select pg_relation_filepath('users');` | `select pg_relation_filepath('users');` |
 | | | `hexdump -C $PGDATA/../datanotde/<paste the result>` | `hexdump -C $PGDATA/../datawithtde/<paste the result>` |
 | | | `pg_dump -p 6444 -U enterprisedb edb` | `pg_dump -p 6445 -U enterprisedb edb` |

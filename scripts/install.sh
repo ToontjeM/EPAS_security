@@ -2,7 +2,7 @@
 
 echo "--- Running install.sh ---"
 
-. /vagrant_config/config.sh
+. /config/config.sh
 
 echo "--- Configuring repo with repo token ${EDB_SUBSCRIPTION_TOKEN} ---"
 curl -1sLf "https://downloads.enterprisedb.com/${EDB_SUBSCRIPTION_TOKEN}/enterprise/setup.rpm.sh" | sudo -E bash
@@ -27,13 +27,16 @@ sudo chown -R enterprisedb:enterprisedb /var/lib/edb/${DATABASEPREFIX}${DATABASE
 sudo systemctl enable ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 sudo systemctl start ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
-echo "--- Configuring pg_hba.conf ---"
-sudo sed -i 's/127.0.0.1\/32,0.0.0.0\/0/g' /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/pg_hba.conf
+echo "--- Configuring postgresql.conf ---"
+sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.conf
+
+#echo "--- Configuring pg_hba.conf ---"
+sudo sed -i 's/ident/md5/g' /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/pg_hba.conf
 
 sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Enabling data redaction ---"
-sudo sed -i 's/#edb_data_redaction/edb_data_redaction/g' /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.conf
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.conf
 
 echo "--- Enabling auditing ---"
 cat <<EOF >>/var/lib/edb/${DATABASEPREFIX}${DATABASEVERSION}/data/postgresql.auto.conf
@@ -72,8 +75,8 @@ sudo su - enterprisedb -c "psql -c \"CREATE DATABASE webapp OWNER webuser;\" edb
 sudo su - enterprisedb -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE webapp TO webuser;\" edb"
 sudo su - enterprisedb -c "psql -c \"GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO webuser;\" webapp"
 sudo su - enterprisedb -c "psql -c \"SET search_path = webapp, pg_catalog;\" webapp"
-sudo su - enterprisedb -c "psql -f /vagrant_scripts/create_table.sql webapp"
-sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant_scripts/customer_data.csv' WITH CSV HEADER;\" webapp"
+sudo su - enterprisedb -c "psql -f /scripts/create_table.sql webapp"
+sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/scripts/customer_data.csv' WITH CSV HEADER;\" webapp"
 sudo su - enterprisedb -c "psql -f /usr/edb/${DATABASEPREFIX}${DATABASEVERSION}/share/contrib/sqlprotect.sql webapp"
 
 echo "--- Configuring Flask application ---"
@@ -97,8 +100,8 @@ sudo systemctl restart ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 sudo systemctl status ${DATABASEPREFIXEDB}-${DATABASEVERSION}
 
 echo "--- Creating demo database for Data Redaction ---"
-sudo su - enterprisedb -c "psql -f /vagrant_scripts/create_table.sql edb"
-sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/vagrant_scripts/customer_data.csv' WITH CSV HEADER;\" edb"
+sudo su - enterprisedb -c "psql -f /scripts/create_table.sql edb"
+sudo su - enterprisedb -c "psql -c \"\copy customers FROM '/scripts/customer_data.csv' WITH CSV HEADER;\" edb"
 sudo su - enterprisedb -c "psql -c \"DELETE FROM customers WHERE length(creditcard) != 16;\" edb"
 
 echo "--- Setting password for user enterprisedb ---"

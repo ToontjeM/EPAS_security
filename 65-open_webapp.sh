@@ -1,4 +1,4 @@
 #!/bin/bash
-. ./env.sh
+. config/config.sh
 
 open http://$DBHOST:5000
